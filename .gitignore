@@ -1,0 +1,25 @@
+# Environment & Secrets
+.env
+*.env
+
+# Virtual Environments
+.venv/
+env/
+venv/
+ENV/
+
+# Python cache & artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Node / React (for when you add the frontend)
+node_modules/
+dist/
+build/
+
+# Operating System & IDE
+.DS_Store
+Thumbs.db
+.vscode/
