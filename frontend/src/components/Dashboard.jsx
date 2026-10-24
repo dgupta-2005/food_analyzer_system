@@ -5,14 +5,14 @@ import {
   Utensils, 
   Barcode, 
   GitCompare, 
-  Target, 
   Sparkles, 
   TrendingUp, 
   CheckCircle2, 
-  ArrowRight,
-  ShieldCheck,
-  Plus,
-  Zap
+  ArrowRight, 
+  ShieldCheck, 
+  Plus, 
+  Zap,
+  Target
 } from 'lucide-react';
 import apiClient from '../services/apiClient';
 
@@ -190,17 +190,6 @@ export default function Dashboard({ setActiveTab, onMealSelect }) {
             <div className="action-desc">Compare food products side-by-side to discover lower-calorie & lower-sugar alternatives.</div>
             <div className="action-footer">
               <span>Compare Items</span> <ArrowRight size={14} />
-            </div>
-          </div>
-
-          <div className="service-action-card" onClick={() => setActiveTab('planner')}>
-            <div className="action-icon-bg bg-amber">
-              <Target size={24} />
-            </div>
-            <div className="action-title">AI Diet Planner</div>
-            <div className="action-desc">Generate tailored meal plans aligned with your target daily calories and diet preferences.</div>
-            <div className="action-footer">
-              <span>Generate Plan</span> <ArrowRight size={14} />
             </div>
           </div>
         </div>

@@ -65,11 +65,11 @@ class ProductScannerService:
                 return None
 
     async def search_products_by_name(self, query: str) -> List[ProductNutritionSchema]:
-        """Searches OpenFoodFacts by product/brand name query string."""
-        url = f"https://world.openfoodfacts.org/cgi/search.pl?search_terms={query}&search_simple=1&action=process&json=1&page_size=10"
-        headers = {"User-Agent": "FoodLensApp - FastAPI Backend - Version 1.0"}
+        """Searches OpenFoodFacts by product/brand name query string with English preference."""
+        url = f"https://world.openfoodfacts.org/cgi/search.pl?search_terms={query}&search_simple=1&action=process&json=1&page_size=12&lc=en"
+        headers = {"User-Agent": "FoodLensApp - FastAPI Backend - Version 1.0 (dev@foodlens.org)"}
 
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        async with httpx.AsyncClient(timeout=8.0) as client:
             try:
                 response = await client.get(url, headers=headers)
                 if response.status_code != 200:
@@ -81,7 +81,8 @@ class ProductScannerService:
 
                 for item in products_raw:
                     nutriments = item.get("nutriments", {})
-                    name = item.get("product_name")
+                    # Prioritize English title if present
+                    name = item.get("product_name_en") or item.get("product_name")
                     if not name:
                         continue
 
@@ -101,7 +102,7 @@ class ProductScannerService:
                     ))
                 return results
             except Exception as e:
-                print(f"⚠️ OpenFoodFacts Search error: {e}")
+                print(f"[WARN] OpenFoodFacts Search error: {e}")
                 return []
 
 scanner_service = ProductScannerService()

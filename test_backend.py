@@ -36,14 +36,7 @@ async def test_backend():
     print(f"[OK] Statistical Metrics Delta: {comp.calorie_reduction_pct}% Calorie Reduction")
     print(f"     Verdict: {comp.summary_verdict}")
 
-    # 4. Test Recommendation Engine
-    from app.services.recommendation_service import recommendation_service
-    from app.schemas.user import UserProfileResponse
-    prof = UserProfileResponse(id=1, user_id=1, primary_goal="weight_loss", target_daily_calories=1800)
-    plan = recommendation_service.generate_personalized_plan(prof, [])
-    print(f"[OK] Recommendation Engine: Generated '{plan.plan_title}' with {len(plan.daily_slots)} meal slots.")
-
-    # 5. Test Gemini Meal Estimation with local test image
+    # 4. Test Gemini Meal Estimation with local test image
     from app.services.gemini_service import gemini_service
     test_image_path = os.path.join(ROOT_DIR, "Overnight-Oats-3.jpg")
     if os.path.exists(test_image_path):

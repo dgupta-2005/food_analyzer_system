@@ -4,34 +4,28 @@ import apiClient from '../services/apiClient';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  // Default guest user profile for seamless out-of-the-box experience
+  // null = unauthenticated; actual user object = authenticated
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('nutrivision_user');
-    return saved ? JSON.parse(saved) : {
-      id: 1,
-      email: 'alex.morgan@nutrivision.ai',
-      full_name: 'Alex Morgan',
-      profile: {
-        primary_goal: 'weight_loss',
-        target_daily_calories: 2000,
-        age: 28,
-        weight_kg: 72,
-        height_cm: 175,
-        activity_level: 'moderate',
-        allergies: ['Peanuts', 'Gluten Free Option'],
-        dietary_preferences: ['Balanced', 'High Protein']
-      }
-    };
+    try {
+      const saved = localStorage.getItem('nutrivision_user');
+      return (saved && saved !== 'undefined' && saved !== 'null') ? JSON.parse(saved) : null;
+    } catch (e) {
+      console.error('Error reading nutrivision_user from localStorage:', e);
+      return null;
+    }
   });
 
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState('login'); // 'login' | 'register'
   const [authError, setAuthError] = useState(null);
   const [authLoading, setAuthLoading] = useState(false);
 
+  // Keep localStorage in sync with authenticated user
   useEffect(() => {
-    localStorage.setItem('nutrivision_user', JSON.stringify(user));
+    if (user) {
+      localStorage.setItem('nutrivision_user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('nutrivision_user');
+    }
   }, [user]);
 
   const login = async (email, password) => {
@@ -40,7 +34,6 @@ export const AuthProvider = ({ children }) => {
     try {
       const data = await apiClient.auth.login(email, password);
       setUser(data.user);
-      setIsAuthModalOpen(false);
       return data;
     } catch (err) {
       setAuthError(err.response?.data?.detail || 'Invalid credentials. Please try again.');
@@ -54,9 +47,8 @@ export const AuthProvider = ({ children }) => {
     setAuthLoading(true);
     setAuthError(null);
     try {
+      // Register only — do NOT setUser. User must sign in after registration.
       const newUser = await apiClient.auth.register(email, password, fullName);
-      setUser(newUser);
-      setIsAuthModalOpen(false);
       return newUser;
     } catch (err) {
       setAuthError(err.response?.data?.detail || 'Registration failed. Email may already be in use.');
@@ -88,38 +80,26 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('nutrivision_user');
-    setUser({
-      id: 1,
-      email: 'guest@nutrivision.ai',
-      full_name: 'Guest User',
-      profile: {
-        primary_goal: 'maintenance',
-        target_daily_calories: 2000,
-        allergies: [],
-        dietary_preferences: ['Balanced']
-      }
-    });
+    setUser(null);
   };
+
+  const isAuthenticated = !!user;
 
   return (
     <AuthContext.Provider
       value={{
         user,
         setUser,
+        isAuthenticated,
         login,
         register,
         logout,
         updateProfile,
-        isAuthModalOpen,
-        setIsAuthModalOpen,
         isProfileModalOpen,
         setIsProfileModalOpen,
-        authMode,
-        setAuthMode,
         authError,
         setAuthError,
-        authLoading
+        authLoading,
       }}
     >
       {children}

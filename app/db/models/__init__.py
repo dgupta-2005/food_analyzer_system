@@ -3,7 +3,6 @@ from app.db.models.user import User, UserProfile
 from app.db.models.meal import MealLog, MealItem
 from app.db.models.product import PackagedProduct, StatisticalComparison
 from app.db.models.collection import UserSavedCollection
-from app.db.models.recommendation import MealPlan
 
 __all__ = [
     "Base",
@@ -14,5 +13,4 @@ __all__ = [
     "PackagedProduct",
     "StatisticalComparison",
     "UserSavedCollection",
-    "MealPlan",
 ]

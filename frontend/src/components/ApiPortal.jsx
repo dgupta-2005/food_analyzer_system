@@ -103,7 +103,6 @@ export default function ApiPortal() {
                 <div><span className="badge badge-green">POST</span> <code>/api/v1/meals/estimate</code> (Multipart Form)</div>
                 <div><span className="badge badge-green">POST</span> <code>/api/v1/meals/log</code> (JSON Payload)</div>
                 <div><span className="badge badge-green">POST</span> <code>/api/v1/packaged-food/compare</code> (JSON Comparison)</div>
-                <div><span className="badge badge-green">POST</span> <code>/api/v1/recommendations/plan</code> (JSON Planner)</div>
               </div>
             </div>
           </div>

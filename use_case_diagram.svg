@@ -1,0 +1,258 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1150" width="100%" height="100%" style="background:#ffffff; font-family:'Arial', 'Segoe UI', sans-serif;">
+  <defs>
+    <!-- Solid Black Arrowhead for <<include>> -->
+    <marker id="arrow-solid" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#000000" />
+    </marker>
+    <!-- Open Arrowhead for <<extend>> -->
+    <marker id="arrow-open" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <polyline points="1,1 9,5 1,9" fill="none" stroke="#000000" stroke-width="2" />
+    </marker>
+  </defs>
+
+  <!-- ==================== HEADER ==================== -->
+  <rect x="40" y="25" width="1520" height="70" rx="4" fill="#ffffff" stroke="#000000" stroke-width="2" />
+  <text x="800" y="68" fill="#000000" font-size="26" font-weight="bold" text-anchor="middle" letter-spacing="0.5">
+    UML USE CASE DIAGRAM — FOOD ANALYZER SYSTEM
+  </text>
+
+  <!-- ==================== SYSTEM BOUNDARY ==================== -->
+  <rect x="320" y="125" width="940" height="910" rx="4" fill="#ffffff" stroke="#000000" stroke-width="2.5" />
+  
+  <!-- Boundary Header Box -->
+  <rect x="320" y="125" width="940" height="50" rx="4" fill="#f4f4f4" stroke="#000000" stroke-width="1.5" />
+  <text x="790" y="157" fill="#000000" font-size="19" font-weight="bold" text-anchor="middle">
+    System Boundary: NutriVision Food Analyzer Web Application
+  </text>
+
+  <!-- ==================== PRIMARY ACTORS (LEFT) ==================== -->
+
+  <!-- Actor 1: Guest / Visitor -->
+  <g transform="translate(150, 240)">
+    <circle cx="0" cy="-30" r="16" fill="#ffffff" stroke="#000000" stroke-width="2.5"/>
+    <line x1="0" y1="-14" x2="0" y2="30" stroke="#000000" stroke-width="2.5"/>
+    <line x1="-28" y1="2" x2="28" y2="2" stroke="#000000" stroke-width="2.5"/>
+    <line x1="0" y1="30" x2="-22" y2="75" stroke="#000000" stroke-width="2.5"/>
+    <line x1="0" y1="30" x2="22" y2="75" stroke="#000000" stroke-width="2.5"/>
+    <text x="0" y="105" fill="#000000" font-size="16" font-weight="bold" text-anchor="middle">Guest / Visitor</text>
+  </g>
+
+  <!-- Actor 2: Registered User -->
+  <g transform="translate(150, 480)">
+    <circle cx="0" cy="-35" r="18" fill="#ffffff" stroke="#000000" stroke-width="3"/>
+    <line x1="0" y1="-17" x2="0" y2="38" stroke="#000000" stroke-width="3"/>
+    <line x1="-34" y1="5" x2="34" y2="5" stroke="#000000" stroke-width="3"/>
+    <line x1="0" y1="38" x2="-26" y2="90" stroke="#000000" stroke-width="3"/>
+    <line x1="0" y1="38" x2="26" y2="90" stroke="#000000" stroke-width="3"/>
+    <text x="0" y="120" fill="#000000" font-size="18" font-weight="bold" text-anchor="middle">Registered User</text>
+  </g>
+
+  <!-- Actor 3: System Admin -->
+  <g transform="translate(150, 880)">
+    <circle cx="0" cy="-30" r="16" fill="#ffffff" stroke="#000000" stroke-width="2.5"/>
+    <line x1="0" y1="-14" x2="0" y2="30" stroke="#000000" stroke-width="2.5"/>
+    <line x1="-28" y1="2" x2="28" y2="2" stroke="#000000" stroke-width="2.5"/>
+    <line x1="0" y1="30" x2="-22" y2="75" stroke="#000000" stroke-width="2.5"/>
+    <line x1="0" y1="30" x2="22" y2="75" stroke="#000000" stroke-width="2.5"/>
+    <text x="0" y="102" fill="#000000" font-size="16" font-weight="bold" text-anchor="middle">System Admin /</text>
+    <text x="0" y="122" fill="#000000" font-size="16" font-weight="bold" text-anchor="middle">IT Developer</text>
+  </g>
+
+  <!-- ==================== SECONDARY / SYSTEM ACTORS (RIGHT) ==================== -->
+
+  <!-- System 1: Google Gemini AI -->
+  <g transform="translate(1420, 390)">
+    <rect x="-105" y="-45" width="210" height="90" rx="4" fill="#ffffff" stroke="#000000" stroke-width="2.5"/>
+    <text x="0" y="-18" fill="#555555" font-size="13" font-style="italic" text-anchor="middle">&lt;&lt;External AI System&gt;&gt;</text>
+    <text x="0" y="8" fill="#000000" font-size="17" font-weight="bold" text-anchor="middle">Google Gemini</text>
+    <text x="0" y="28" fill="#000000" font-size="15" font-weight="bold" text-anchor="middle">Vision AI Model</text>
+  </g>
+
+  <!-- System 2: OpenFoodFacts API -->
+  <g transform="translate(1420, 580)">
+    <rect x="-105" y="-45" width="210" height="90" rx="4" fill="#ffffff" stroke="#000000" stroke-width="2.5"/>
+    <text x="0" y="-18" fill="#555555" font-size="13" font-style="italic" text-anchor="middle">&lt;&lt;External Web API&gt;&gt;</text>
+    <text x="0" y="8" fill="#000000" font-size="17" font-weight="bold" text-anchor="middle">OpenFoodFacts</text>
+    <text x="0" y="28" fill="#000000" font-size="15" font-weight="bold" text-anchor="middle">Product Database</text>
+  </g>
+
+  <!-- System 3: Database -->
+  <g transform="translate(1420, 800)">
+    <rect x="-105" y="-45" width="210" height="90" rx="4" fill="#ffffff" stroke="#000000" stroke-width="2.5"/>
+    <text x="0" y="-18" fill="#555555" font-size="13" font-style="italic" text-anchor="middle">&lt;&lt;Database System&gt;&gt;</text>
+    <text x="0" y="8" fill="#000000" font-size="17" font-weight="bold" text-anchor="middle">SQLite Database</text>
+    <text x="0" y="28" fill="#000000" font-size="14" text-anchor="middle">(Async SQLAlchemy)</text>
+  </g>
+
+
+  <!-- ==================== USE CASE OVALS (BLACK & WHITE) ==================== -->
+
+  <!-- UC-01: Sign Up / Sign In -->
+  <g id="uc1" transform="translate(530, 230)">
+    <ellipse cx="0" cy="0" rx="145" ry="34" fill="#ffffff" stroke="#000000" stroke-width="2.2"/>
+    <text x="0" y="6" fill="#000000" font-size="16" font-weight="bold" text-anchor="middle">UC-01: Sign Up / Sign In</text>
+  </g>
+
+  <!-- UC-02: Manage Macro Profile -->
+  <g id="uc2" transform="translate(970, 230)">
+    <ellipse cx="0" cy="0" rx="155" ry="34" fill="#ffffff" stroke="#000000" stroke-width="2.2"/>
+    <text x="0" y="6" fill="#000000" font-size="16" font-weight="bold" text-anchor="middle">UC-02: Manage Macro Profile</text>
+  </g>
+
+  <!-- UC-03: View Daily Analytics Dashboard -->
+  <g id="uc3" transform="translate(530, 315)">
+    <ellipse cx="0" cy="0" rx="150" ry="32" fill="#ffffff" stroke="#000000" stroke-width="2.2"/>
+    <text x="0" y="6" fill="#000000" font-size="15.5" font-weight="bold" text-anchor="middle">UC-03: View Daily Analytics</text>
+  </g>
+
+  <!-- UC-04: Estimate Meal Calories & Macros -->
+  <g id="uc4" transform="translate(550, 410)">
+    <ellipse cx="0" cy="0" rx="170" ry="38" fill="#ffffff" stroke="#000000" stroke-width="2.6"/>
+    <text x="0" y="-3" fill="#000000" font-size="16" font-weight="bold" text-anchor="middle">UC-04: Estimate Meal Calories</text>
+    <text x="0" y="19" fill="#000000" font-size="14" font-weight="normal" text-anchor="middle">&amp; Macronutrients (SVC-01)</text>
+  </g>
+
+  <!-- Extension: Upload Photo -->
+  <g id="uc-ext1" transform="translate(980, 340)">
+    <ellipse cx="0" cy="0" rx="135" ry="30" fill="#ffffff" stroke="#000000" stroke-width="1.8" stroke-dasharray="5,3"/>
+    <text x="0" y="5" fill="#000000" font-size="14.5" text-anchor="middle">Upload Meal Photo</text>
+  </g>
+
+  <!-- UC-05: Log Meal to History -->
+  <g id="uc5" transform="translate(980, 425)">
+    <ellipse cx="0" cy="0" rx="145" ry="32" fill="#ffffff" stroke="#000000" stroke-width="2.2"/>
+    <text x="0" y="6" fill="#000000" font-size="15.5" font-weight="bold" text-anchor="middle">UC-05: Log Meal to History</text>
+  </g>
+
+  <!-- UC-06: Scan Packaged Food Barcode -->
+  <g id="uc6" transform="translate(550, 525)">
+    <ellipse cx="0" cy="0" rx="170" ry="38" fill="#ffffff" stroke="#000000" stroke-width="2.6"/>
+    <text x="0" y="-3" fill="#000000" font-size="16" font-weight="bold" text-anchor="middle">UC-06: Scan Packaged Food</text>
+    <text x="0" y="19" fill="#000000" font-size="14" font-weight="normal" text-anchor="middle">Barcode / Search (SVC-02)</text>
+  </g>
+
+  <!-- UC-07: Compare Products Side-by-Side -->
+  <g id="uc7" transform="translate(550, 640)">
+    <ellipse cx="0" cy="0" rx="170" ry="36" fill="#ffffff" stroke="#000000" stroke-width="2.6"/>
+    <text x="0" y="-3" fill="#000000" font-size="16" font-weight="bold" text-anchor="middle">UC-07: Compare Food Products</text>
+    <text x="0" y="18" fill="#000000" font-size="14" font-weight="normal" text-anchor="middle">Side-by-Side (SVC-03)</text>
+  </g>
+
+  <!-- Extension: Save Alternative -->
+  <g id="uc-ext2" transform="translate(980, 640)">
+    <ellipse cx="0" cy="0" rx="145" ry="30" fill="#ffffff" stroke="#000000" stroke-width="1.8" stroke-dasharray="5,3"/>
+    <text x="0" y="5" fill="#000000" font-size="14.5" text-anchor="middle">Save Healthy Alternative</text>
+  </g>
+
+  <!-- UC-08: Generate Personalized Diet Plan -->
+  <g id="uc8" transform="translate(550, 755)">
+    <ellipse cx="0" cy="0" rx="170" ry="38" fill="#ffffff" stroke="#000000" stroke-width="2.6"/>
+    <text x="0" y="-3" fill="#000000" font-size="16" font-weight="bold" text-anchor="middle">UC-08: Generate Personalized</text>
+    <text x="0" y="19" fill="#000000" font-size="14" font-weight="normal" text-anchor="middle">Diet &amp; Meal Plan (SVC-04)</text>
+  </g>
+
+  <!-- UC-09: View & Filter Meal History -->
+  <g id="uc9" transform="translate(980, 755)">
+    <ellipse cx="0" cy="0" rx="150" ry="32" fill="#ffffff" stroke="#000000" stroke-width="2.2"/>
+    <text x="0" y="6" fill="#000000" font-size="15.5" font-weight="bold" text-anchor="middle">UC-09: View Meal History</text>
+  </g>
+
+  <!-- UC-10: Monitor Health & API Docs -->
+  <g id="uc10" transform="translate(550, 895)">
+    <ellipse cx="0" cy="0" rx="170" ry="36" fill="#ffffff" stroke="#000000" stroke-width="2.2"/>
+    <text x="0" y="-2" fill="#000000" font-size="15.5" font-weight="bold" text-anchor="middle">UC-10: Monitor Service Health</text>
+    <text x="0" y="18" fill="#000000" font-size="13.5" font-weight="normal" text-anchor="middle">&amp; Test OpenAPI /docs (SVC-06)</text>
+  </g>
+
+  <!-- ==================== ASSOCIATIONS & RELATIONSHIPS ==================== -->
+
+  <!-- Guest -> UC-01 -->
+  <line x1="190" y1="230" x2="385" y2="230" stroke="#000000" stroke-width="2"/>
+
+  <!-- User -> UC-01 -->
+  <line x1="195" y1="460" x2="410" y2="255" stroke="#000000" stroke-width="2"/>
+
+  <!-- User -> UC-02 Profile -->
+  <line x1="195" y1="465" x2="820" y2="245" stroke="#000000" stroke-width="2"/>
+
+  <!-- User -> UC-03 Dashboard -->
+  <line x1="195" y1="475" x2="380" y2="325" stroke="#000000" stroke-width="2"/>
+
+  <!-- User -> UC-04 Estimate -->
+  <line x1="195" y1="490" x2="380" y2="410" stroke="#000000" stroke-width="2.2"/>
+
+  <!-- User -> UC-06 Scan -->
+  <line x1="195" y1="510" x2="380" y2="525" stroke="#000000" stroke-width="2.2"/>
+
+  <!-- User -> UC-07 Compare -->
+  <line x1="195" y1="530" x2="380" y2="635" stroke="#000000" stroke-width="2.2"/>
+
+  <!-- User -> UC-08 Diet Plan -->
+  <line x1="195" y1="545" x2="380" y2="745" stroke="#000000" stroke-width="2.2"/>
+
+  <!-- User -> UC-09 History -->
+  <line x1="195" y1="560" x2="835" y2="750" stroke="#000000" stroke-width="2"/>
+
+  <!-- Admin -> UC-10 Health -->
+  <line x1="190" y1="885" x2="380" y2="895" stroke="#000000" stroke-width="2.2"/>
+
+  <!-- <<extend>> UC-04 -> Upload Photo -->
+  <line x1="700" y1="385" x2="850" y2="355" stroke="#000000" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrow-open)"/>
+  <text x="765" y="360" fill="#000000" font-size="13.5" font-style="italic" font-weight="bold" text-anchor="middle">&lt;&lt;extend&gt;&gt;</text>
+
+  <!-- <<include>> UC-04 -> Log Meal -->
+  <line x1="720" y1="418" x2="835" y2="422" stroke="#000000" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrow-solid)"/>
+  <text x="775" y="440" fill="#000000" font-size="13.5" font-style="italic" font-weight="bold" text-anchor="middle">&lt;&lt;include&gt;&gt;</text>
+
+  <!-- <<extend>> UC-07 Compare -> Save Alternative -->
+  <line x1="720" y1="640" x2="835" y2="640" stroke="#000000" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrow-open)"/>
+  <text x="775" y="632" fill="#000000" font-size="13.5" font-style="italic" font-weight="bold" text-anchor="middle">&lt;&lt;extend&gt;&gt;</text>
+
+  <!-- <<include>> UC-08 Diet -> UC-02 Profile -->
+  <path d="M 700 735 C 800 680, 890 400, 930 270" fill="none" stroke="#000000" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrow-solid)"/>
+  <text x="870" y="500" fill="#000000" font-size="13.5" font-style="italic" font-weight="bold" text-anchor="middle">&lt;&lt;include&gt;&gt;</text>
+
+  <!-- ==================== EXTERNAL SYSTEM CONNECTIONS ==================== -->
+  
+  <!-- UC-04 Estimate -> Gemini AI -->
+  <line x1="720" y1="410" x2="1315" y2="390" stroke="#000000" stroke-width="2"/>
+
+  <!-- UC-06 Scan -> OpenFoodFacts -->
+  <line x1="720" y1="535" x2="1315" y2="575" stroke="#000000" stroke-width="2"/>
+
+  <!-- UC-07 Compare -> OpenFoodFacts -->
+  <line x1="720" y1="635" x2="1315" y2="590" stroke="#000000" stroke-width="2"/>
+
+  <!-- UC-01 Auth -> Database -->
+  <path d="M 675 230 C 1150 200, 1260 620, 1315" fill="none" stroke="#000000" stroke-width="1.8"/>
+
+  <!-- UC-05 Log Meal -> Database -->
+  <line x1="1125" y1="435" x2="1315" y2="780" stroke="#000000" stroke-width="1.8"/>
+
+  <!-- UC-09 History -> Database -->
+  <line x1="1130" y1="765" x2="1315" y2="800" stroke="#000000" stroke-width="1.8"/>
+
+  <!-- UC-08 Diet -> Database -->
+  <line x1="720" y1="765" x2="1315" y2="815" stroke="#000000" stroke-width="1.8"/>
+
+  <!-- UC-02 Profile -> Database -->
+  <line x1="1125" y1="245" x2="1315" y2="765" stroke="#000000" stroke-width="1.8"/>
+
+  <!-- ==================== LEGEND (BLACK & WHITE) ==================== -->
+  <g transform="translate(60, 1055)">
+    <rect x="0" y="0" width="1480" height="55" rx="4" fill="#fcfcfc" stroke="#000000" stroke-width="1.5"/>
+    <text x="30" y="33" fill="#000000" font-size="14" font-weight="bold">UML NOTATION LEGEND:</text>
+    
+    <line x1="230" y1="28" x2="280" y2="28" stroke="#000000" stroke-width="2"/>
+    <text x="290" y="33" fill="#000000" font-size="13">Actor Association</text>
+
+    <line x1="470" y1="28" x2="520" y2="28" stroke="#000000" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrow-solid)"/>
+    <text x="530" y="33" fill="#000000" font-size="13">&lt;&lt;include&gt;&gt; Mandatory Dependency</text>
+
+    <line x1="840" y1="28" x2="890" y2="28" stroke="#000000" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrow-open)"/>
+    <text x="900" y="33" fill="#000000" font-size="13">&lt;&lt;extend&gt;&gt; Optional Extension</text>
+
+    <rect x="1180" y="16" width="30" height="22" rx="10" fill="#ffffff" stroke="#000000" stroke-width="2"/>
+    <text x="1220" y="33" fill="#000000" font-size="13">System Use Case</text>
+  </g>
+</svg>

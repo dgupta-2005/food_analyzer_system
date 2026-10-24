@@ -1,53 +1,53 @@
 import React, { useState, useEffect } from 'react';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import MealEstimator from './components/MealEstimator';
 import BarcodeScanner from './components/BarcodeScanner';
 import ProductComparison from './components/ProductComparison';
-import DietPlanner from './components/DietPlanner';
 import MealHistory from './components/MealHistory';
-import AuthModal from './components/AuthModal';
 import ProfileModal from './components/ProfileModal';
+import AuthPage from './components/AuthPage';
 import './App.css';
 import apiClient from './services/apiClient';
 
+// ── Authenticated app shell ────────────────────────────────────────────────
 function AppContent() {
+  const { user, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [todayCalories, setTodayCalories] = useState(1450);
+  const [todayCalories, setTodayCalories] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  // Fetch recent meal history to compute live daily calorie totals
   const refreshCalories = async () => {
     try {
-      const logs = await apiClient.meals.getHistory(1);
+      const targetId = user?.id || 1;
+      const logs = await apiClient.meals.getHistory(targetId);
       const sum = logs.reduce((acc, curr) => acc + (curr.total_calories || 0), 0);
       setTodayCalories(sum);
-    } catch (e) {
-      // Fallback
+      setRefreshKey(k => k + 1);
+    } catch (_) {
+      // silent
     }
   };
 
   useEffect(() => {
-    refreshCalories();
-  }, []);
+    if (isAuthenticated) refreshCalories();
+  }, [isAuthenticated, user?.id]);
+
+  // ── Guard: show login/signup page for unauthenticated visitors ──────────
+  if (!isAuthenticated) {
+    return <AuthPage />;
+  }
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'dashboard':
-        return <Dashboard setActiveTab={setActiveTab} />;
-      case 'estimator':
-        return <MealEstimator onMealLogged={refreshCalories} />;
-      case 'barcode':
-        return <BarcodeScanner />;
-      case 'compare':
-        return <ProductComparison />;
-      case 'planner':
-        return <DietPlanner />;
-      case 'history':
-        return <MealHistory />;
-      default:
-        return <Dashboard setActiveTab={setActiveTab} />;
+      case 'dashboard': return <Dashboard key={refreshKey} setActiveTab={setActiveTab} />;
+      case 'estimator': return <MealEstimator onMealLogged={refreshCalories} />;
+      case 'barcode':   return <BarcodeScanner />;
+      case 'compare':   return <ProductComparison />;
+      case 'history':   return <MealHistory key={refreshKey} />;
+      default:          return <Dashboard key={refreshKey} setActiveTab={setActiveTab} />;
     }
   };
 
@@ -64,20 +64,18 @@ function AppContent() {
 
       <footer className="app-footer">
         <div>
-          <strong>NutriVision AI Intelligence Platform</strong> © {new Date().getFullYear()} • Empowering Healthy Living Through Vision AI
+          <strong>NutriVision AI Intelligence Platform</strong> © {new Date().getFullYear()} · Empowering Healthy Living Through Vision AI
         </div>
-        <div>
-          Nutritive Score Engine & Smart Macro Analytics
-        </div>
+        <div>Nutritive Score Engine &amp; Smart Macro Analytics</div>
       </footer>
 
-      {/* Global User Auth & Profile Modals */}
-      <AuthModal />
+      {/* Profile settings modal (only for authenticated users) */}
       <ProfileModal />
     </div>
   );
 }
 
+// ── Root: wraps everything in the auth provider ───────────────────────────
 export default function App() {
   return (
     <AuthProvider>

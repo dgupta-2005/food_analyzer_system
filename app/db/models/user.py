@@ -15,7 +15,6 @@ class User(Base):
     profile = relationship("UserProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
     meal_logs = relationship("MealLog", back_populates="user", cascade="all, delete-orphan")
     saved_collections = relationship("UserSavedCollection", back_populates="user", cascade="all, delete-orphan")
-    meal_plans = relationship("MealPlan", back_populates="user", cascade="all, delete-orphan")
 
 
 class UserProfile(Base):

@@ -91,24 +91,6 @@ export const apiClient = {
       return response.data;
     },
   },
-
-  // AI Diet & Macro Planning Services
-  planner: {
-    generatePlan: async (userProfile, recentLogs = []) => {
-      const response = await http.post('/recommendations/plan', {
-        user_profile: userProfile,
-        recent_logs: recentLogs,
-      });
-      return response.data;
-    },
-    getAlternativesForProduct: async (packagedProduct, userProfile) => {
-      const response = await http.post('/recommendations/alternatives', {
-        packaged_product: packagedProduct,
-        user_profile: userProfile,
-      });
-      return response.data;
-    },
-  },
 };
 
 export default apiClient;

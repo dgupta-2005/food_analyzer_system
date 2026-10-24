@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Utensils, Upload, Image as ImageIcon, CheckCircle2, AlertCircle, Save, Loader2, Sparkles, Check } from 'lucide-react';
+import { Utensils, Upload, Image as ImageIcon, CheckCircle2, AlertCircle, Save, Loader2, Sparkles, Check, X } from 'lucide-react';
 import apiClient from '../services/apiClient';
+import { useAuth } from '../context/AuthContext';
 
 export default function MealEstimator({ onMealLogged }) {
+  const { user } = useAuth();
   const [description, setDescription] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -11,6 +13,7 @@ export default function MealEstimator({ onMealLogged }) {
   const [result, setResult] = useState(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -19,6 +22,43 @@ export default function MealEstimator({ onMealLogged }) {
       setPreviewUrl(URL.createObjectURL(file));
       setError(null);
     }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      if (file.type.startsWith('image/')) {
+        setSelectedFile(file);
+        setPreviewUrl(URL.createObjectURL(file));
+        setError(null);
+      } else {
+        setError('Please drop a valid image file (JPG, PNG, WEBP).');
+      }
+    }
+  };
+
+  const handleRemoveFile = (e) => {
+    e.stopPropagation();
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    // Reset the file input so the same file can be re-selected
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) fileInput.value = '';
   };
 
   const handleEstimate = async (e) => {
@@ -48,7 +88,7 @@ export default function MealEstimator({ onMealLogged }) {
     setSaving(true);
     try {
       const payload = {
-        user_id: 1,
+        user_id: user?.id || 1,
         image_url: result.image_url,
         user_description: description || result.summary_item_name,
         total_calories: result.total_calories,
@@ -101,8 +141,11 @@ export default function MealEstimator({ onMealLogged }) {
             <div className="form-group">
               <label className="form-label">Upload Food Photo (Optional)</label>
               <div 
-                className="dropzone"
-                onClick={() => document.getElementById('fileInput').click()}
+                className={`dropzone${dragOver ? ' dropzone-active' : ''}`}
+                onClick={() => !previewUrl && document.getElementById('fileInput').click()}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
               >
                 <input 
                   type="file" 
@@ -114,9 +157,18 @@ export default function MealEstimator({ onMealLogged }) {
                 {previewUrl ? (
                   <div className="preview-container">
                     <img src={previewUrl} alt="Meal Preview" className="preview-image" />
-                    <p className="preview-filename">
-                      Selected: {selectedFile?.name} (Click to change)
-                    </p>
+                    <div className="preview-info">
+                      <p className="preview-filename">{selectedFile?.name}</p>
+                      <button
+                        type="button"
+                        className="remove-photo-btn"
+                        onClick={handleRemoveFile}
+                        title="Remove photo"
+                      >
+                        <X size={16} />
+                        Remove
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div className="dropzone-placeholder">

@@ -4,7 +4,6 @@ import {
   Utensils, 
   Barcode, 
   GitCompare, 
-  Target, 
   History, 
   CheckCircle2, 
   ArrowRight,
@@ -59,15 +58,6 @@ export default function ServiceOverview({ setActiveTab }) {
       badgeColor: 'badge-green'
     },
     {
-      id: 'planner',
-      title: 'AI Diet & Macro Planner',
-      code: 'SVC-04',
-      description: 'Generates customized meal slots, target calorie allocations, and dish recommendations based on user goals and preferences.',
-      status: 'Operational',
-      icon: Target,
-      badgeColor: 'badge-green'
-    },
-    {
       id: 'history',
       title: 'Meal Logs & Database Manager',
       code: 'SVC-05',
@@ -103,7 +93,7 @@ export default function ServiceOverview({ setActiveTab }) {
       <div className="metrics-grid">
         <div className="metric-card">
           <div className="metric-label">Backend Service Status</div>
-          <div className="metric-value" style={{ color: apiStatus === 'online' ? '#059669' : '#dc2626' }}>
+          <div className="metric-value" style={{ color: apiStatus === 'online' ? '#ffffff' : '#aaaaaa' }}>
             {apiStatus === 'online' ? '100% ONLINE' : 'OFFLINE'}
           </div>
           <div className="metric-subtext">FastAPI REST Server (Port 8000)</div>
@@ -111,7 +101,7 @@ export default function ServiceOverview({ setActiveTab }) {
 
         <div className="metric-card emerald">
           <div className="metric-label">AI Engine Status</div>
-          <div className="metric-value" style={{ color: '#059669' }}>READY</div>
+          <div className="metric-value" style={{ color: '#cccccc' }}>READY</div>
           <div className="metric-subtext">Google Gemini 2.5 Vision API</div>
         </div>
 
@@ -130,7 +120,7 @@ export default function ServiceOverview({ setActiveTab }) {
 
       {/* Services Catalogue Grid */}
       <div style={{ marginTop: '28px' }}>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', marginBottom: '16px' }}>
+        <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#f5f5f5', marginBottom: '16px' }}>
           Available IT Services & Microservices Catalogue
         </h2>
 
@@ -142,17 +132,17 @@ export default function ServiceOverview({ setActiveTab }) {
                 <div>
                   <div className="card-header" style={{ marginBottom: '12px' }}>
                     <div className="card-title">
-                      <IconComponent size={20} color="#2563eb" />
+                      <IconComponent size={20} color="#cccccc" />
                       <span>{svc.title}</span>
                     </div>
                     <span className={`badge ${svc.badgeColor}`}>{svc.code}</span>
                   </div>
-                  <p style={{ fontSize: '13px', color: '#475569', lineHeight: 1.6, marginBottom: '20px' }}>
+                  <p style={{ fontSize: '13px', color: '#a0a0a0', lineHeight: 1.6, marginBottom: '20px' }}>
                     {svc.description}
                   </p>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
                   <span className="badge badge-green">
                     <CheckCircle2 size={12} /> {svc.status}
                   </span>

@@ -1,94 +1,288 @@
-import React, { useState } from 'react';
-import { GitCompare, ArrowRight, CheckCircle2, TrendingDown, TrendingUp, AlertCircle, Loader2, Sparkles, ShieldCheck } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  GitCompare, Search, CheckCircle2, TrendingDown, TrendingUp,
+  AlertCircle, Loader2, Sparkles, X, ArrowRightLeft, Zap, ChevronDown, ChevronRight
+} from 'lucide-react';
 import apiClient from '../services/apiClient';
 
+/* ── Nutri-Score color helper ─────────────────────────────── */
+const nutriColor = (s) => {
+  if (!s) return { bg: 'rgba(255,255,255,0.08)', text: '#aaa' };
+  const map = {
+    A: { bg: 'rgba(34,197,94,0.15)', text: '#4ade80' },
+    B: { bg: 'rgba(132,204,22,0.12)', text: '#a3e635' },
+    C: { bg: 'rgba(250,204,21,0.12)', text: '#facc15' },
+    D: { bg: 'rgba(251,146,60,0.12)', text: '#fb923c' },
+    E: { bg: 'rgba(239,68,68,0.12)', text: '#f87171' },
+  };
+  return map[s.toUpperCase()] || map.C;
+};
+
+/* ── Product Search Input component ───────────────────────── */
+function ProductSearchInput({ label, placeholder, onProductSelected, accentColor = '#a0a0a0' }) {
+  const [query, setQuery] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const debounceRef = useRef(null);
+  const containerRef = useRef(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const handleSearch = (val) => {
+    setQuery(val);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (val.length < 2) {
+      setSuggestions([]);
+      setShowDropdown(false);
+      return;
+    }
+    debounceRef.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const results = await apiClient.food.searchProducts(val);
+        setSuggestions(results.slice(0, 8));
+        setShowDropdown(true);
+      } catch {
+        setSuggestions([]);
+      } finally {
+        setSearching(false);
+      }
+    }, 400);
+  };
+
+  const pickProduct = (product) => {
+    setQuery(product.product_name);
+    setShowDropdown(false);
+    onProductSelected(product);
+  };
+
+  return (
+    <div className="pc-search-wrap" ref={containerRef}>
+      <label className="form-label">{label}</label>
+      <div className="pc-search-input-row">
+        <Search size={16} className="pc-search-icon" />
+        <input
+          type="text"
+          className="form-input"
+          placeholder={placeholder}
+          value={query}
+          onChange={(e) => handleSearch(e.target.value)}
+          onFocus={() => suggestions.length > 0 && setShowDropdown(true)}
+          style={{ paddingLeft: '40px' }}
+        />
+        {searching && <Loader2 size={16} className="pc-search-spinner spin" />}
+        {query && !searching && (
+          <button
+            className="pc-search-clear"
+            onClick={() => { setQuery(''); setSuggestions([]); setShowDropdown(false); }}
+          >
+            <X size={14} />
+          </button>
+        )}
+      </div>
+      {showDropdown && suggestions.length > 0 && (
+        <div className="pc-dropdown">
+          {suggestions.map((p, i) => {
+            const sc = nutriColor(p.nutri_score);
+            return (
+              <button key={i} className="pc-dropdown-item" onClick={() => pickProduct(p)}>
+                <div className="pc-dropdown-info">
+                  <span className="pc-dropdown-name">{p.product_name}</span>
+                  <span className="pc-dropdown-brand">{p.brand || 'Unknown brand'} • {p.calories_100g} kcal</span>
+                </div>
+                {p.nutri_score && (
+                  <span className="pc-nutri-badge-sm" style={{ background: sc.bg, color: sc.text }}>
+                    {p.nutri_score.toUpperCase()}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Visual bar helper ────────────────────────────────────── */
+function ComparisonBar({ label, origVal, altVal, unit, lowerIsBetter = true }) {
+  const maxVal = Math.max(origVal, altVal, 1);
+  const origPct = (origVal / maxVal) * 100;
+  const altPct = (altVal / maxVal) * 100;
+  const diff = origVal - altVal;
+  const improved = lowerIsBetter ? diff > 0 : diff < 0;
+  const pctChange = origVal > 0 ? Math.abs(((diff) / origVal) * 100).toFixed(0) : '–';
+
+  return (
+    <div className="pc-bar-row">
+      <div className="pc-bar-label">{label}</div>
+      <div className="pc-bar-tracks">
+        <div className="pc-bar-track">
+          <div className="pc-bar-fill pc-bar-orig" style={{ width: `${origPct}%` }} />
+          <span className="pc-bar-val">{origVal}{unit}</span>
+        </div>
+        <div className="pc-bar-track">
+          <div className="pc-bar-fill pc-bar-alt" style={{ width: `${altPct}%` }} />
+          <span className="pc-bar-val">{altVal}{unit}</span>
+        </div>
+      </div>
+      <div className={`pc-bar-delta ${improved ? 'good' : diff === 0 ? '' : 'bad'}`}>
+        {improved ? (lowerIsBetter ? '↓' : '↑') : diff === 0 ? '=' : (lowerIsBetter ? '↑' : '↓')}
+        {pctChange}%
+      </div>
+    </div>
+  );
+}
+
+/* ── Nutri Score badge ────────────────────────────────────── */
+function NutriScoreBadge({ score }) {
+  const grades = ['A', 'B', 'C', 'D', 'E'];
+  const active = (score || 'C').toUpperCase();
+  return (
+    <div className="pc-nutriscore-row">
+      {grades.map((g) => {
+        const c = nutriColor(g);
+        const isActive = g === active;
+        return (
+          <span
+            key={g}
+            className={`pc-nutri-letter ${isActive ? 'active' : ''}`}
+            style={{
+              background: isActive ? c.bg : 'rgba(255,255,255,0.03)',
+              color: isActive ? c.text : '#444',
+              borderColor: isActive ? c.text : 'transparent',
+              transform: isActive ? 'scale(1.2)' : 'scale(1)',
+            }}
+          >
+            {g}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MAIN COMPONENT
+   ══════════════════════════════════════════════════════════════ */
 export default function ProductComparison() {
-  const [origName, setOrigName] = useState('Deep Fried Potato Chips');
-  const [origCal, setOrigCal] = useState(536);
-  const [origSugar, setOrigSugar] = useState(5.0);
-  const [origProtein, setOrigProtein] = useState(6.5);
-  const [origScore, setOrigScore] = useState('E');
+  const [origProduct, setOrigProduct] = useState(null);
+  const [altProduct, setAltProduct] = useState(null);
 
-  const [altName, setAltName] = useState('Baked Quinoa & Oats Chips');
-  const [altCal, setAltCal] = useState(380);
-  const [altSugar, setAltSugar] = useState(1.2);
-  const [altProtein, setAltProtein] = useState(12.0);
-  const [altScore, setAltScore] = useState('A');
+  // Auto-find alternatives
+  const [autoQuery, setAutoQuery] = useState('');
+  const [autoLoading, setAutoLoading] = useState(false);
+  const [autoResults, setAutoResults] = useState([]);
 
+  const [manualMode, setManualMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [result, setResult] = useState(null);
+  const [comparisonResult, setComparisonResult] = useState(null);
 
-  const handleCompare = async (e) => {
-    if (e) e.preventDefault();
-    setLoading(true);
+  // ── Load a preset pair ──────────────────────────────────
+  const presets = [
+    {
+      label: '🍟 Chips vs Baked Oats',
+      orig: { product_name: 'Deep Fried Potato Chips', calories_100g: 536, sugar_100g: 5.0, protein_100g: 6.5, carbs_100g: 52, fat_100g: 35, nutri_score: 'E', brand: 'Generic', category: 'Snacks' },
+      alt: { product_name: 'Baked Quinoa & Oats Chips', calories_100g: 380, sugar_100g: 1.2, protein_100g: 12.0, carbs_100g: 60, fat_100g: 8, nutri_score: 'A', brand: 'Health Store', category: 'Snacks' },
+    },
+    {
+      label: '🥤 Soda vs Sparkling Water',
+      orig: { product_name: 'Regular Sugary Cola Soda', calories_100g: 160, sugar_100g: 39.0, protein_100g: 0.0, carbs_100g: 40, fat_100g: 0, nutri_score: 'E', brand: 'Cola Co', category: 'Beverages' },
+      alt: { product_name: 'Zero Sugar Sparkling Water', calories_100g: 0, sugar_100g: 0.0, protein_100g: 0.0, carbs_100g: 0, fat_100g: 0, nutri_score: 'A', brand: 'Fresh', category: 'Beverages' },
+    },
+    {
+      label: '🍫 Chocolate vs Dark Cocoa',
+      orig: { product_name: 'Milk Chocolate Candy Bar', calories_100g: 540, sugar_100g: 56.0, protein_100g: 7.0, carbs_100g: 60, fat_100g: 30, nutri_score: 'D', brand: 'Choco', category: 'Confectionery' },
+      alt: { product_name: '85% Dark Cocoa Chocolate', calories_100g: 450, sugar_100g: 14.0, protein_100g: 11.0, carbs_100g: 30, fat_100g: 40, nutri_score: 'B', brand: 'Lindt', category: 'Confectionery' },
+    },
+  ];
+
+  const loadPreset = (idx) => {
+    const p = presets[idx];
+    setOrigProduct(p.orig);
+    setAltProduct(p.alt);
+    setComparisonResult(null);
+    setAutoResults([]);
     setError(null);
-    setResult(null);
+    buildLocalComparison(p.orig, p.alt);
+  };
 
-    const origProd = {
-      product_name: origName,
-      calories_100g: parseFloat(origCal),
-      sugar_100g: parseFloat(origSugar),
-      protein_100g: parseFloat(origProtein),
-      nutri_score: origScore
-    };
+  // ── Build local comparison result ───────────────────────
+  const buildLocalComparison = (orig, alt) => {
+    const origCal = Math.max(1, orig.calories_100g);
+    const origSugar = Math.max(0.1, orig.sugar_100g);
+    const origProtein = Math.max(0.1, orig.protein_100g);
 
-    const altProd = {
-      product_name: altName,
-      calories_100g: parseFloat(altCal),
-      sugar_100g: parseFloat(altSugar),
-      protein_100g: parseFloat(altProtein),
-      nutri_score: altScore
-    };
+    setComparisonResult({
+      original_product: orig,
+      alternative_product: alt,
+      calorie_reduction_pct: Math.round(((origCal - alt.calories_100g) / origCal) * 100),
+      sugar_reduction_pct: Math.round(((origSugar - alt.sugar_100g) / origSugar) * 100),
+      protein_increase_pct: Math.round(((alt.protein_100g - origProtein) / origProtein) * 100),
+      health_score_delta: 0,
+      summary_verdict: `${alt.product_name} is a healthier swap for ${orig.product_name}.`,
+    });
+  };
+
+  // ── Auto find healthier alternatives ────────────────────
+  const triggerAutoFind = async (targetQuery) => {
+    if (!targetQuery || targetQuery.length < 2) return;
+    setAutoLoading(true);
+    setError(null);
+    setAutoResults([]);
+    setComparisonResult(null);
 
     try {
-      const data = await apiClient.food.compareProducts(origProd, altProd);
-      setResult(data);
+      const results = await apiClient.food.findHealthyAlternatives(targetQuery);
+      if (results.length === 0) {
+        setError('No healthier alternatives found for this product. Try another product.');
+      } else {
+        setAutoResults(results);
+        setAltProduct(results[0].alternative_product);
+        setOrigProduct(results[0].original_product);
+        setComparisonResult(results[0]);
+      }
     } catch (err) {
-      setError(err.response?.data?.detail || err.message || "Product comparison failed. Please try again.");
+      setError(err.response?.data?.detail || err.message || 'Failed to find alternatives.');
     } finally {
-      setLoading(false);
+      setAutoLoading(false);
     }
   };
 
-  const loadPresetPair = (preset) => {
-    if (preset === 1) {
-      setOrigName('Deep Fried Potato Chips');
-      setOrigCal(536);
-      setOrigSugar(5.0);
-      setOrigProtein(6.5);
-      setOrigScore('E');
-
-      setAltName('Baked Quinoa & Oats Chips');
-      setAltCal(380);
-      setAltSugar(1.2);
-      setAltProtein(12.0);
-      setAltScore('A');
-    } else if (preset === 2) {
-      setOrigName('Regular Sugary Cola Soda');
-      setOrigCal(160);
-      setOrigSugar(39.0);
-      setOrigProtein(0.0);
-      setOrigScore('E');
-
-      setAltName('Zero Sugar Sparkling Water');
-      setAltCal(0);
-      setAltSugar(0.0);
-      setAltProtein(0.0);
-      setAltScore('A');
-    } else if (preset === 3) {
-      setOrigName('Milk Chocolate Candy Bar');
-      setOrigCal(540);
-      setOrigSugar(56.0);
-      setOrigProtein(7.0);
-      setOrigScore('D');
-
-      setAltName('85% Dark Cocoa Chocolate');
-      setAltCal(450);
-      setAltSugar(14.0);
-      setAltProtein(11.0);
-      setAltScore('B');
+  const handleAutoFind = () => {
+    const query = origProduct?.product_name || autoQuery;
+    if (!query || query.length < 2) {
+      setError('Please search and select a product first, or type a product name.');
+      return;
     }
+    triggerAutoFind(query);
+  };
+
+  // ── Select an alternative from auto-results ─────────────
+  const selectAlternative = (result) => {
+    setAltProduct(result.alternative_product);
+    setComparisonResult(result);
+  };
+
+  // ── Manual compare ──────────────────────────────────────
+  const handleManualCompare = () => {
+    if (!origProduct || !altProduct) {
+      setError('Please select both products to compare.');
+      return;
+    }
+    setError(null);
+    buildLocalComparison(origProduct, altProduct);
   };
 
   return (
@@ -99,113 +293,139 @@ export default function ProductComparison() {
         </div>
         <h1 className="page-title">Healthy Product Swap & Comparison</h1>
         <p className="page-description">
-          Compare food products side-by-side to analyze calorie reduction %, sugar savings, protein gains, and AI health verdicts.
+          Search any product to instantly discover healthier alternatives with calorie, sugar, and protein comparisons.
         </p>
       </div>
 
+      {/* ── Quick Presets ────────────────────────────────── */}
       <div className="preset-container" style={{ marginBottom: '20px' }}>
-        <div className="preset-label">Test Food Comparisons:</div>
+        <div className="preset-label">Quick Comparisons:</div>
         <div className="preset-chips">
-          <button type="button" className="chip-btn" onClick={() => loadPresetPair(1)}>
-            🍟 Chips vs Baked Oats
-          </button>
-          <button type="button" className="chip-btn" onClick={() => loadPresetPair(2)}>
-            🥤 Soda vs Zero Sparkling Water
-          </button>
-          <button type="button" className="chip-btn" onClick={() => loadPresetPair(3)}>
-            🍫 Milk Chocolate vs 85% Dark Cocoa
-          </button>
+          {presets.map((p, i) => (
+            <button key={i} type="button" className="chip-btn" onClick={() => loadPreset(i)}>
+              {p.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      <form onSubmit={handleCompare}>
-        <div className="grid-2col">
-          {/* Original Item */}
-          <div className="card card-border-danger">
-            <div className="card-header">
-              <div className="card-title text-danger">
-                <span>Original Food (Benchmark)</span>
-              </div>
-              <span className="badge badge-danger">Unhealthy Target</span>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Product Name</label>
-              <input type="text" className="form-input" value={origName} onChange={(e) => setOrigName(e.target.value)} />
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label">Calories / 100g</label>
-                <input type="number" className="form-input" value={origCal} onChange={(e) => setOrigCal(e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Sugar (g) / 100g</label>
-                <input type="number" step="0.1" className="form-input" value={origSugar} onChange={(e) => setOrigSugar(e.target.value)} />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label">Protein (g) / 100g</label>
-                <input type="number" step="0.1" className="form-input" value={origProtein} onChange={(e) => setOrigProtein(e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Nutri-Score</label>
-                <select className="form-select" value={origScore} onChange={(e) => setOrigScore(e.target.value)}>
-                  <option value="A">A (Best)</option>
-                  <option value="B">B</option>
-                  <option value="C">C</option>
-                  <option value="D">D</option>
-                  <option value="E">E (Worst)</option>
-                </select>
-              </div>
-            </div>
+      {/* ── Main Input Card ──────────────────────────────── */}
+      <div className="card pc-main-card">
+        <div className="card-header">
+          <div className="card-title">
+            <Search size={18} className="text-primary" />
+            <span>Find Product & Healthier Swaps</span>
           </div>
-
-          {/* Healthier Alternative */}
-          <div className="card card-border-emerald">
-            <div className="card-header">
-              <div className="card-title text-emerald">
-                <span>Healthier Alternative Product</span>
-              </div>
-              <span className="badge badge-emerald">Recommended Swap</span>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Product Name</label>
-              <input type="text" className="form-input" value={altName} onChange={(e) => setAltName(e.target.value)} />
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label">Calories / 100g</label>
-                <input type="number" className="form-input" value={altCal} onChange={(e) => setAltCal(e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Sugar (g) / 100g</label>
-                <input type="number" step="0.1" className="form-input" value={altSugar} onChange={(e) => setAltSugar(e.target.value)} />
-              </div>
-            </div>
-
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label">Protein (g) / 100g</label>
-                <input type="number" step="0.1" className="form-input" value={altProtein} onChange={(e) => setAltProtein(e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Nutri-Score</label>
-                <select className="form-select" value={altScore} onChange={(e) => setAltScore(e.target.value)}>
-                  <option value="A">A (Best)</option>
-                  <option value="B">B</option>
-                  <option value="C">C</option>
-                  <option value="D">D</option>
-                  <option value="E">E (Worst)</option>
-                </select>
-              </div>
-            </div>
-          </div>
+          <button
+            type="button"
+            className="pc-mode-toggle"
+            onClick={() => setManualMode(!manualMode)}
+          >
+            {manualMode ? 'Auto Mode' : 'Manual Mode'}
+            <ChevronRight size={14} />
+          </button>
         </div>
+
+        {/* ── Auto Mode (default) ───────────────────────── */}
+        {!manualMode ? (
+          <div className="pc-auto-section">
+            <ProductSearchInput
+              label="Search for a product to swap"
+              placeholder="e.g. Coca Cola, Doritos, Nutella..."
+              onProductSelected={(p) => {
+                setOrigProduct(p);
+                setAutoQuery(p.product_name);
+                setComparisonResult(null);
+                setAutoResults([]);
+                triggerAutoFind(p.product_name);
+              }}
+            />
+
+            {origProduct && (
+              <div className="pc-selected-card">
+                <div className="pc-selected-info">
+                  <span className="pc-selected-name">{origProduct.product_name}</span>
+                  <span className="pc-selected-meta">
+                    {origProduct.brand || 'Unknown'} • {origProduct.calories_100g} kcal • Sugar: {origProduct.sugar_100g}g
+                  </span>
+                </div>
+                <NutriScoreBadge score={origProduct.nutri_score} />
+              </div>
+            )}
+
+            <button
+              type="button"
+              className="btn-primary full-width pc-find-btn"
+              onClick={handleAutoFind}
+              disabled={autoLoading}
+            >
+              {autoLoading ? (
+                <>
+                  <Loader2 size={18} className="spin" />
+                  Searching healthier alternatives...
+                </>
+              ) : (
+                <>
+                  <Zap size={18} />
+                  Find Healthier Swaps
+                </>
+              )}
+            </button>
+          </div>
+        ) : (
+          /* ── Manual Mode ───────────────────────────────── */
+          <div className="pc-manual-section">
+            <div className="pc-manual-grid">
+              <div className="pc-manual-col">
+                <div className="pc-manual-label danger">
+                  <span className="pc-dot red" /> Original Product
+                </div>
+                <ProductSearchInput
+                  label="Search original product"
+                  placeholder="Search by name..."
+                  onProductSelected={(p) => { setOrigProduct(p); setComparisonResult(null); }}
+                />
+                {origProduct && (
+                  <div className="pc-mini-card">
+                    <strong>{origProduct.product_name}</strong>
+                    <span>{origProduct.calories_100g} kcal • Sugar: {origProduct.sugar_100g}g • Protein: {origProduct.protein_100g}g</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="pc-manual-divider">
+                <ArrowRightLeft size={20} />
+              </div>
+
+              <div className="pc-manual-col">
+                <div className="pc-manual-label good">
+                  <span className="pc-dot green" /> Healthier Alternative
+                </div>
+                <ProductSearchInput
+                  label="Search alternative product"
+                  placeholder="Search by name..."
+                  onProductSelected={(p) => { setAltProduct(p); setComparisonResult(null); }}
+                />
+                {altProduct && (
+                  <div className="pc-mini-card">
+                    <strong>{altProduct.product_name}</strong>
+                    <span>{altProduct.calories_100g} kcal • Sugar: {altProduct.sugar_100g}g • Protein: {altProduct.protein_100g}g</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="btn-primary full-width pc-find-btn"
+              onClick={handleManualCompare}
+              disabled={loading}
+            >
+              <GitCompare size={18} />
+              Compare Products
+            </button>
+          </div>
+        )}
 
         {error && (
           <div className="alert alert-danger" style={{ marginTop: '16px' }}>
@@ -213,109 +433,149 @@ export default function ProductComparison() {
             <span>{error}</span>
           </div>
         )}
+      </div>
 
-        <button 
-          type="submit" 
-          className="btn-primary full-width" 
-          style={{ marginTop: '20px', padding: '12px', fontSize: '15px' }} 
-          disabled={loading}
-        >
-          {loading ? (
-            <>
-              <Loader2 size={18} className="spin" />
-              Computing Health Deltas & Verdict...
-            </>
-          ) : (
-            <>
-              <GitCompare size={18} />
-              Calculate Food Swap Comparison
-            </>
-          )}
-        </button>
-      </form>
+      {/* ── Auto-discovered alternatives list ────────────── */}
+      {autoResults.length > 1 && (
+        <div className="card pc-alts-card">
+          <div className="card-header">
+            <div className="card-title">
+              <Sparkles size={18} className="text-primary" />
+              <span>Healthier Alternatives Found ({autoResults.length})</span>
+            </div>
+          </div>
+          <div className="pc-alts-list">
+            {autoResults.map((r, i) => {
+              const isActive = comparisonResult?.alternative_product?.product_name === r.alternative_product.product_name;
+              const sc = nutriColor(r.alternative_product.nutri_score);
+              return (
+                <button
+                  key={i}
+                  className={`pc-alt-item ${isActive ? 'active' : ''}`}
+                  onClick={() => selectAlternative(r)}
+                >
+                  <div className="pc-alt-left">
+                    <span className="pc-alt-name">{r.alternative_product.product_name}</span>
+                    <span className="pc-alt-brand">{r.alternative_product.brand || 'Unknown'}</span>
+                  </div>
+                  <div className="pc-alt-right">
+                    {r.calorie_reduction_pct > 0 && (
+                      <span className="pc-alt-tag green">
+                        <TrendingDown size={12} /> {r.calorie_reduction_pct}% fewer cal
+                      </span>
+                    )}
+                    {r.alternative_product.nutri_score && (
+                      <span className="pc-nutri-badge-sm" style={{ background: sc.bg, color: sc.text }}>
+                        {r.alternative_product.nutri_score.toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
-      {/* Comparison Results Card */}
-      {result && (
-        <div className="card" style={{ marginTop: '24px' }}>
+      {/* ── Visual Comparison Results ────────────────────── */}
+      {comparisonResult && (
+        <div className="card pc-result-card">
           <div className="card-header">
             <div className="card-title">
               <CheckCircle2 size={18} className="text-emerald" />
-              <span>Smart Comparison Analytics & Verdict</span>
+              <span>Comparison Results</span>
             </div>
-            <span className="badge badge-emerald">Analytics Complete</span>
+            <span className="badge badge-emerald">Analysis Complete</span>
           </div>
 
-          {/* Metric Delta Badges Grid */}
-          <div className="metrics-grid three-cols" style={{ marginBottom: '20px' }}>
-            <div className="metric-box green">
-              <div className="metric-lbl">
-                <TrendingDown size={14} /> CALORIE REDUCTION
+          {/* Product name headers */}
+          <div className="pc-result-header">
+            <div className="pc-result-product orig">
+              <span className="pc-dot red" />
+              <div>
+                <div className="pc-result-pname">{comparisonResult.original_product.product_name}</div>
+                <div className="pc-result-pbrand">{comparisonResult.original_product.brand || ''}</div>
               </div>
-              <div className="metric-val">-{result.calorie_reduction_pct}%</div>
-              <div className="metric-sub">Fewer calories per portion</div>
+              <NutriScoreBadge score={comparisonResult.original_product.nutri_score} />
             </div>
-
-            <div className="metric-box green">
-              <div className="metric-lbl">
-                <TrendingDown size={14} /> SUGAR REDUCTION
+            <div className="pc-vs">VS</div>
+            <div className="pc-result-product alt">
+              <span className="pc-dot green" />
+              <div>
+                <div className="pc-result-pname">{comparisonResult.alternative_product.product_name}</div>
+                <div className="pc-result-pbrand">{comparisonResult.alternative_product.brand || ''}</div>
               </div>
-              <div className="metric-val">-{result.sugar_reduction_pct}%</div>
-              <div className="metric-sub">Drop in refined sugar</div>
-            </div>
-
-            <div className="metric-box blue">
-              <div className="metric-lbl">
-                <TrendingUp size={14} /> PROTEIN INCREASE
-              </div>
-              <div className="metric-val">+{result.protein_increase_pct}%</div>
-              <div className="metric-sub">Higher dietary protein</div>
+              <NutriScoreBadge score={comparisonResult.alternative_product.nutri_score} />
             </div>
           </div>
 
-          {/* Verdict Banner */}
+          {/* Metric delta cards */}
+          <div className="pc-deltas-grid">
+            <div className={`pc-delta-card ${comparisonResult.calorie_reduction_pct > 0 ? 'positive' : 'negative'}`}>
+              <TrendingDown size={18} />
+              <div className="pc-delta-val">
+                {comparisonResult.calorie_reduction_pct > 0 ? '-' : '+'}{Math.abs(comparisonResult.calorie_reduction_pct)}%
+              </div>
+              <div className="pc-delta-label">Calories</div>
+            </div>
+            <div className={`pc-delta-card ${comparisonResult.sugar_reduction_pct > 0 ? 'positive' : 'negative'}`}>
+              <TrendingDown size={18} />
+              <div className="pc-delta-val">
+                {comparisonResult.sugar_reduction_pct > 0 ? '-' : '+'}{Math.abs(comparisonResult.sugar_reduction_pct)}%
+              </div>
+              <div className="pc-delta-label">Sugar</div>
+            </div>
+            <div className={`pc-delta-card ${comparisonResult.protein_increase_pct > 0 ? 'positive' : 'negative'}`}>
+              <TrendingUp size={18} />
+              <div className="pc-delta-val">
+                {comparisonResult.protein_increase_pct > 0 ? '+' : ''}{comparisonResult.protein_increase_pct}%
+              </div>
+              <div className="pc-delta-label">Protein</div>
+            </div>
+          </div>
+
+          {/* Visual comparison bars */}
+          <div className="pc-bars-section">
+            <div className="pc-bars-legend">
+              <span><span className="pc-dot red" /> Original</span>
+              <span><span className="pc-dot green" /> Alternative</span>
+            </div>
+            <ComparisonBar
+              label="Calories"
+              origVal={comparisonResult.original_product.calories_100g}
+              altVal={comparisonResult.alternative_product.calories_100g}
+              unit=" kcal"
+              lowerIsBetter={true}
+            />
+            <ComparisonBar
+              label="Sugar"
+              origVal={comparisonResult.original_product.sugar_100g}
+              altVal={comparisonResult.alternative_product.sugar_100g}
+              unit="g"
+              lowerIsBetter={true}
+            />
+            <ComparisonBar
+              label="Protein"
+              origVal={comparisonResult.original_product.protein_100g}
+              altVal={comparisonResult.alternative_product.protein_100g}
+              unit="g"
+              lowerIsBetter={false}
+            />
+            {comparisonResult.original_product.fat_100g !== undefined && (
+              <ComparisonBar
+                label="Fat"
+                origVal={comparisonResult.original_product.fat_100g || 0}
+                altVal={comparisonResult.alternative_product.fat_100g || 0}
+                unit="g"
+                lowerIsBetter={true}
+              />
+            )}
+          </div>
+
+          {/* AI Verdict */}
           <div className="verdict-banner">
             <div className="verdict-tag">AI Nutritionist Verdict</div>
-            <div className="verdict-text">{result.summary_verdict}</div>
-          </div>
-
-          {/* Comparison Table */}
-          <div className="table-container" style={{ marginTop: '20px' }}>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Nutrient Metric</th>
-                  <th className="text-danger">Original ({result.original_product.product_name})</th>
-                  <th className="text-emerald">Swap Alternative ({result.alternative_product.product_name})</th>
-                  <th>Nutritional Benefit</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td style={{ fontWeight: 600 }}>Calories (per 100g)</td>
-                  <td>{result.original_product.calories_100g} kcal</td>
-                  <td>{result.alternative_product.calories_100g} kcal</td>
-                  <td className="text-emerald font-semibold">-{result.original_product.calories_100g - result.alternative_product.calories_100g} kcal savings</td>
-                </tr>
-                <tr>
-                  <td style={{ fontWeight: 600 }}>Sugar (per 100g)</td>
-                  <td>{result.original_product.sugar_100g} g</td>
-                  <td>{result.alternative_product.sugar_100g} g</td>
-                  <td className="text-emerald font-semibold">-{(result.original_product.sugar_100g - result.alternative_product.sugar_100g).toFixed(1)} g less sugar</td>
-                </tr>
-                <tr>
-                  <td style={{ fontWeight: 600 }}>Protein (per 100g)</td>
-                  <td>{result.original_product.protein_100g} g</td>
-                  <td>{result.alternative_product.protein_100g} g</td>
-                  <td className="text-blue font-semibold">+{(result.alternative_product.protein_100g - result.original_product.protein_100g).toFixed(1)} g more protein</td>
-                </tr>
-                <tr>
-                  <td style={{ fontWeight: 600 }}>Nutri-Score Rating</td>
-                  <td><span className="badge badge-danger">{result.original_product.nutri_score}</span></td>
-                  <td><span className="badge badge-emerald">{result.alternative_product.nutri_score}</span></td>
-                  <td className="text-emerald font-semibold">Upgraded Grade</td>
-                </tr>
-              </tbody>
-            </table>
+            <div className="verdict-text">{comparisonResult.summary_verdict}</div>
           </div>
         </div>
       )}

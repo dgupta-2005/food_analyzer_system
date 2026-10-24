@@ -4,10 +4,8 @@ import {
   Utensils, 
   Barcode, 
   GitCompare, 
-  Target, 
   BookOpen, 
   UserCheck,
-  Sparkles,
   ChevronRight
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -20,7 +18,6 @@ export default function Sidebar({ activeTab, setActiveTab }) {
     { id: 'estimator', label: 'AI Meal Estimator', icon: Utensils, badge: 'Vision AI' },
     { id: 'barcode', label: 'Barcode Food Scanner', icon: Barcode, badge: 'Smart' },
     { id: 'compare', label: 'Healthy Swap Engine', icon: GitCompare, badge: 'Compare' },
-    { id: 'planner', label: 'AI Meal & Diet Planner', icon: Target, badge: 'Planner' },
     { id: 'history', label: 'Daily Food Journal', icon: BookOpen },
   ];
 

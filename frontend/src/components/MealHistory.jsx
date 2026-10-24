@@ -177,9 +177,9 @@ export default function MealHistory() {
 
                     {/* Sub-row for expanded items */}
                     {isExpanded && (
-                      <tr style={{ background: 'rgba(30, 41, 59, 0.4)' }}>
+                      <tr style={{ background: 'rgba(255, 255, 255, 0.03)' }}>
                         <td colSpan="7" style={{ padding: '16px' }}>
-                          <div style={{ fontSize: '13px', fontWeight: 700, color: '#e2e8f0', marginBottom: '8px' }}>
+                          <div style={{ fontSize: '13px', fontWeight: 700, color: '#f5f5f5', marginBottom: '8px' }}>
                             Itemized Component List for Entry #{log.id}:
                           </div>
                           <div className="grid-subitems">
@@ -194,7 +194,7 @@ export default function MealHistory() {
                                 </div>
                               ))
                             ) : (
-                              <div style={{ fontSize: '12px', color: '#94a3b8' }}>No itemized sub-components logged for this entry.</div>
+                              <div style={{ fontSize: '12px', color: '#888888' }}>No itemized sub-components logged for this entry.</div>
                             )}
                           </div>
                         </td>
@@ -205,7 +205,7 @@ export default function MealHistory() {
               })
             ) : (
               <tr>
-                <td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>
+                <td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: '#888888' }}>
                   {loading ? 'Loading daily food journal entries...' : 'No food journal entries found matching your query.'}
                 </td>
               </tr>

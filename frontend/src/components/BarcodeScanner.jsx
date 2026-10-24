@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Barcode, Search, AlertCircle, CheckCircle2, ShieldCheck, Loader2, Sparkles, Upload, Image as ImageIcon } from 'lucide-react';
+import { Barcode, Search, AlertCircle, CheckCircle2, ShieldCheck, Loader2, Sparkles, Upload, Image as ImageIcon, X } from 'lucide-react';
 import apiClient from '../services/apiClient';
 
 export default function BarcodeScanner() {
@@ -10,6 +10,7 @@ export default function BarcodeScanner() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
+  const [dragOver, setDragOver] = useState(false);
 
   const handleScan = async (e) => {
     if (e) e.preventDefault();
@@ -61,6 +62,42 @@ export default function BarcodeScanner() {
     }
   };
 
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      if (file.type.startsWith('image/')) {
+        setSelectedFile(file);
+        setPreviewUrl(URL.createObjectURL(file));
+        handleBarcodeImageUpload(file);
+      } else {
+        setError('Please drop a valid image file (JPG, PNG, WEBP).');
+      }
+    }
+  };
+
+  const handleRemoveFile = (e) => {
+    e.stopPropagation();
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    const fileInput = document.getElementById('barcodeFileInput');
+    if (fileInput) fileInput.value = '';
+  };
+
   const loadPresetBarcode = (code) => {
     setBarcode(code);
   };
@@ -100,8 +137,11 @@ export default function BarcodeScanner() {
             <div className="form-group">
               <label className="form-label">Upload Barcode Photo</label>
               <div 
-                className="dropzone"
-                onClick={() => document.getElementById('barcodeFileInput').click()}
+                className={`dropzone${dragOver ? ' dropzone-active' : ''}`}
+                onClick={() => !previewUrl && document.getElementById('barcodeFileInput').click()}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
               >
                 <input 
                   type="file" 
@@ -113,9 +153,18 @@ export default function BarcodeScanner() {
                 {previewUrl ? (
                   <div className="preview-container">
                     <img src={previewUrl} alt="Barcode Preview" className="preview-image" />
-                    <p className="preview-filename">
-                      Selected: {selectedFile?.name} (Click to change)
-                    </p>
+                    <div className="preview-info">
+                      <p className="preview-filename">{selectedFile?.name}</p>
+                      <button
+                        type="button"
+                        className="remove-photo-btn"
+                        onClick={handleRemoveFile}
+                        title="Remove photo"
+                      >
+                        <X size={16} />
+                        Remove
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div className="dropzone-placeholder">

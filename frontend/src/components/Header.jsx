@@ -1,9 +1,9 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Sparkles, Flame, User, LogIn, Settings, LogOut } from 'lucide-react';
+import { Sparkles, Flame, Settings, LogOut } from 'lucide-react';
 
-export default function Header({ todayCalories = 1450 }) {
-  const { user, logout, setIsAuthModalOpen, setIsProfileModalOpen, setAuthMode } = useAuth();
+export default function Header({ todayCalories = 0 }) {
+  const { user, logout, setIsProfileModalOpen } = useAuth();
 
   const targetCalories = user?.profile?.target_daily_calories || 2000;
   const progressPct = Math.min(Math.round((todayCalories / targetCalories) * 100), 100);
@@ -12,19 +12,19 @@ export default function Header({ todayCalories = 1450 }) {
     <header className="app-header">
       <div className="brand-section">
         <div className="brand-logo">
-          <Sparkles size={22} className="logo-sparkle" />
+          <Sparkles size={22} />
         </div>
         <div>
           <div className="brand-title">
             NutriVision <span className="brand-accent">AI</span>
           </div>
-          <div className="brand-subtitle">Smart Food Intelligence & Personal AI Diet Advisor</div>
+          <div className="brand-subtitle">Smart Food Intelligence &amp; Personal AI Diet Advisor</div>
         </div>
       </div>
 
       <div className="header-actions">
         {/* Daily Calorie Progress Pill */}
-        <div 
+        <div
           className="calorie-tracker-badge"
           onClick={() => setIsProfileModalOpen(true)}
           title="Click to adjust your daily calorie target"
@@ -43,56 +43,39 @@ export default function Header({ todayCalories = 1450 }) {
           </div>
         </div>
 
-        {/* User Account Controls */}
-        {user && user.full_name !== 'Guest User' ? (
-          <div className="user-profile-menu">
-            <button 
-              className="user-btn"
-              onClick={() => setIsProfileModalOpen(true)}
-            >
-              <div className="avatar">
-                {user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
-              </div>
-              <div className="user-details">
-                <span className="user-name">{user.full_name}</span>
-                <span className="user-role">
-                  {user.profile?.primary_goal === 'weight_loss' ? '🔥 Calorie Deficit' : '💪 High Protein'}
-                </span>
-              </div>
-            </button>
+        {/* Authenticated user controls */}
+        <div className="user-profile-menu">
+          <button
+            className="user-btn"
+            onClick={() => setIsProfileModalOpen(true)}
+          >
+            <div className="avatar">
+              {user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
+            </div>
+            <div className="user-details">
+              <span className="user-name">{user?.full_name || 'User'}</span>
+              <span className="user-role">
+                {user?.profile?.primary_goal === 'weight_loss' ? '🔥 Calorie Deficit' : '💪 Active Goal'}
+              </span>
+            </div>
+          </button>
 
-            <button 
-              className="icon-btn-ghost"
-              title="Profile & Daily Goal Settings"
-              onClick={() => setIsProfileModalOpen(true)}
-            >
-              <Settings size={18} />
-            </button>
+          <button
+            className="icon-btn-ghost"
+            title="Profile &amp; Daily Goal Settings"
+            onClick={() => setIsProfileModalOpen(true)}
+          >
+            <Settings size={18} />
+          </button>
 
-            <button 
-              className="icon-btn-ghost text-danger"
-              title="Sign Out"
-              onClick={logout}
-            >
-              <LogOut size={18} />
-            </button>
-          </div>
-        ) : (
-          <div className="auth-buttons">
-            <button
-              className="btn-secondary"
-              onClick={() => { setAuthMode('login'); setIsAuthModalOpen(true); }}
-            >
-              <LogIn size={16} /> Sign In
-            </button>
-            <button
-              className="btn-primary"
-              onClick={() => { setAuthMode('register'); setIsAuthModalOpen(true); }}
-            >
-              Get Started Free
-            </button>
-          </div>
-        )}
+          <button
+            className="icon-btn-ghost"
+            title="Sign Out"
+            onClick={logout}
+          >
+            <LogOut size={18} />
+          </button>
+        </div>
       </div>
     </header>
   );
