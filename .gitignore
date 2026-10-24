@@ -1,6 +1,49 @@
 # Environment & Secrets
 .env
 *.env
+*.pem
+*.key
+firebase_credentials*.json
+
+# Databases & SQLite
+*.db
+*.sqlite
+*.sqlite3
+food_analyzer.db
+
+# Uploads & Media (runtime generated user files)
+uploads/*
+!uploads/.gitkeep
+
+# Documents & Local Reports
+*.docx
+*.doc
+*.pdf
+NutriVision_SRS*.docx
+build_srs_doc.py
+check_pages.ps1
+
+# Local Diagrams & Visualizers
+sequence_diagram.*
+state_diagram.*
+use_case_diagram.*
+view_diagram.html
+
+# Local Test Images in Root
+Overnight-Oats-3.jpg
+image.png
+
+# Root package-lock (frontend has its own package.json & package-lock.json)
+/package-lock.json
+
+# Python cache & artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+*.egg-info/
+.coverage
+htmlcov/
 
 # Virtual Environments
 .venv/
@@ -8,18 +51,16 @@ env/
 venv/
 ENV/
 
-# Python cache & artifacts
-__pycache__/
-*.py[cod]
-*$py.class
-.pytest_cache/
-
-# Node / React (for when you add the frontend)
+# Node / React
 node_modules/
 dist/
 build/
+.oxlint-cache/
 
 # Operating System & IDE
 .DS_Store
 Thumbs.db
 .vscode/
+.idea/
+*.swp
+*.swo
